@@ -151,8 +151,37 @@ py::array_t<int> find_basins(
   return label_array;
 }
 
+py::array_t<int> count_basin_area(
+  py::array_t<int> label_array, 
+  size_t basin_num, 
+  py::array_t<double> h_array,
+  bool excluding_sea
+) {
+  py::array_t<int> area_array(basin_num);
+  int* area = static_cast<int*>(area_array.request().ptr);
+  memset(area, 0, basin_num * sizeof(int));
+
+  int* label = static_cast<int*>(label_array.request().ptr);
+  size_t m = label_array.request().shape[0];
+  size_t n = label_array.request().shape[1];
+
+  double* h = static_cast<double*>(h_array.request().ptr);
+
+  for (size_t i = 0; i < m; i++) {
+    for (size_t j = 0; j < n; j++) {
+      const int &x = label[i * n + j];
+      if (!excluding_sea || h[i * n + j] >= 0) {
+        area[x]++;
+      }
+    }
+  }
+
+  return area_array;
+}
+
 PYBIND11_MODULE(basin, m) {
     m.doc() = "Find all local maxima in a 2D NumPy array";
     m.def("find_maxima", &find_maxima, "Find all local maxima in a 2D NumPy array");
     m.def("find_basins", &find_basins, "Find all basins of attraction.");
+    m.def("count_basin_area", &count_basin_area, "Count the area of all basins.");
 }
