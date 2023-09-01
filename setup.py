@@ -4,7 +4,8 @@ import pybind11
 module_name = 'basin'
 cpp_sources = ['basin.cpp']
 include_dirs = [pybind11.get_include(),
-                '/usr/include/python3.9']
+                # '/usr/include/python3.10'
+                ]
 
 ext_modules = [
     Extension(
