@@ -4,6 +4,7 @@ import nevis
 import random
 
 data = nevis.gb()
+
 vmin = np.min(data)
 vmax = np.max(data)
 
@@ -16,18 +17,30 @@ def get_part(data, size):
     part = data[max_idx // n - size: max_idx // n + size, max_idx % n - size: max_idx % n + size]
     return part
 
-part = get_part(data, 160)
-np.savetxt('part.txt', part, fmt='%.1f')
+def get_square(square):
+    coords, size = nevis.Coords.from_square_with_size(square)
+    x, y = coords.grid
+    x //= 50
+    y //= 50
+    size //= 50
+    return data[y:y+size, x:x+size]
+
+
+# print(get_square('NY31'))
+
+# part = get_part(data, 50)
+part = get_square('NY40')
+# np.savetxt('part.txt', part, fmt='%.1f')
 
 
 def find_labels(h):
     maxima, sn = basin.find_maxima(h)
-    np.savetxt('maxima.txt', maxima, fmt='%d')
-    np.savetxt('sn.txt', sn, fmt='%d')
+    # np.savetxt('maxima.txt', maxima, fmt='%d')
+    # np.savetxt('sn.txt', sn, fmt='%d')
     label = basin.find_basins(h, sn, maxima)
     return label, maxima
 
-def plot_label(h, label, maxima, show_max_num=None):
+def plot_label(h, label, maxima, show_max_num=None, alpha=0.5):
     import matplotlib.pyplot as plt
     import matplotlib.colors
 
@@ -71,7 +84,7 @@ def plot_label(h, label, maxima, show_max_num=None):
         # cmap='tab20',
         cmap=cmap_object,
         interpolation='none',
-        alpha=1,
+        alpha=alpha,
     )
 
     # if show_max_num is not None:
@@ -79,10 +92,43 @@ def plot_label(h, label, maxima, show_max_num=None):
     # else:
     x, y = maxima.T
     
-    plt.scatter(y[1:], x[1:], c='white', s=50, marker='x')
+    plt.scatter(y[1:], x[1:], c='purple', s=50, marker='x')
     plt.scatter(y[:1], x[:1], c='red', s=50, marker='x')
-    plt.show()
+    # plt.show()
+    plt.savefig('out.png')
 
-label, maxima = find_labels(part)
-np.savetxt('label.txt', label, fmt='%d')
-plot_label(part, label, maxima, show_max_num=None)
+if __name__ == '__main__':
+    # label, maxima = find_labels(part)
+    # area = basin.count_basin_area(label, len(maxima))
+    # largest_index = np.argmax(area)
+
+    # label, maxima = find_labels(data)
+    # area = basin.count_basin_area(label, len(maxima), data, True)
+    # np.save('res/1/area-ex-sea.npy', area)
+    # np.save('res/1/maxima.npy', maxima)
+    # np.save('res/1/label.npy', label)
+
+    # area_2 = np.zeros((len(maxima), 2))
+    # area_2[:, 0] = area
+    # area_2[:, 1] = np.arange(len(maxima))
+    # area_2 = area_2[area_2[:, 0].argsort()]
+
+    # np.save('res/1/area_2-ex-sea.npy', area_2)
+
+    # for i in range(10):
+    #     print(area_2[-i-1])
+    #     index = int(area_2[-i-1, 1])
+    #     print(maxima[index])
+    #     print(area[index])
+    #     print()
+    np.savetxt('NY31.txt', part, fmt='%.2f')
+    maxima, sn = basin.find_maxima(part)
+    label = basin.find_basins(part, sn, maxima)
+    plot_label(part, label, maxima, show_max_num=None, alpha=0)
+    # print(maxima)
+    # for x, y in maxima:
+    #     print(part[x, y])
+
+
+# np.savetxt('label.txt', label, fmt='%d')
+# plot_label(part, label, maxima, show_max_num=None)
